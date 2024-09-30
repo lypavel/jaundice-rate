@@ -1,7 +1,6 @@
 from functools import partial
 
-import aiohttp
-from aiohttp import web
+from aiohttp import ClientSession, web
 from aiohttp.web_request import Request
 from anyio import create_task_group
 from pymorphy2 import MorphAnalyzer
@@ -30,7 +29,7 @@ async def handle(request: Request,
 
     articles = []
 
-    async with aiohttp.ClientSession() as session:
+    async with ClientSession() as session:
         async with create_task_group() as task_group:
             for article_url in article_urls:
                 task_group.start_soon(

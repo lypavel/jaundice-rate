@@ -46,6 +46,25 @@ python3 server.py
 http://<server_host>:<server_port>?articles=<article1_url>,<article2_url>,<article3_url>
 ```
 
+### Формат JSON ответа сервера
+
+```json
+[
+    {
+        "status": "FETCH_ERROR",
+        "url": "https://inosmi.ru/not/exist.html",
+        "score": null,
+        "words_count": null
+    },
+    {
+        "status": "OK",
+        "url": "https://inosmi.ru/20240927/zelenskiy-270236865.html",
+        "score": 0.0,
+        "words_count": 470
+    }
+]
+```
+
 
 
 # Как запустить тесты
