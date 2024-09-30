@@ -14,7 +14,7 @@
 
 # Как установить
 
-1. Установите Python 3.10.12
+1. Установите [Python 3.10.12](https://www.python.org/downloads/release/python-31012/)
 2. Создайте виртуальное окружение:
     ```bash
     python3 -m venv venv
@@ -43,7 +43,7 @@ python3 server.py
 ### Отправка запросов на сервер
 
 ```bash
-http://<server_host>:<server_port>?articles=<article1_url>,<article2_url>,<article3_url>
+http://<server_host>:<server_port>/?articles=<article1_url>,<article2_url>,<article3_url>
 ```
 
 ### Формат JSON ответа сервера
