@@ -15,7 +15,9 @@ from pymorphy2 import MorphAnalyzer
 
 from adapters.exceptions import ArticleNotFound
 from adapters.inosmi_ru import sanitize
-from text_tools import split_by_words, calculate_jaundice_rate
+from parse_args import parse_arguments
+from text_tools import split_by_words, calculate_jaundice_rate, \
+    load_charged_words
 
 
 class ProcessingStatus(Enum):
@@ -54,9 +56,6 @@ TEST_ARTICLES = [
     'https://inosmi.ru/20240629/assanzh-269370889.html',
 ]
 
-FETCH_TIMEOUT = 10
-ANALYSIS_TIMEOUT = 3
-
 logger = logging.getLogger(Path(__file__).name)
 
 
@@ -76,19 +75,19 @@ async def process_article(session: ClientSession,
                           morph: MorphAnalyzer,
                           article_url: str,
                           charged_words: list[str],
-                          articles: list) -> None:
+                          articles: list,
+                          fetch_timeout: int,
+                          analysis_timeout: int) -> None:
     try:
-        async with timeout(FETCH_TIMEOUT):
+        async with timeout(fetch_timeout):
             html = await fetch(session, article_url)
 
-        cleaned_data = sanitize(html, plaintext=True)
-
-        async with timer() as get_elapsed_time:
-            async with timeout(ANALYSIS_TIMEOUT):
+        async with timeout(analysis_timeout):
+            async with timer() as get_elapsed_time:
+                cleaned_data = sanitize(html, plaintext=True)
                 article_words = split_by_words(morph, cleaned_data)
-
-            article_score = calculate_jaundice_rate(article_words,
-                                                    charged_words)
+                article_score = calculate_jaundice_rate(article_words,
+                                                        charged_words)
 
         duration = get_elapsed_time()
 
@@ -110,20 +109,15 @@ async def process_article(session: ClientSession,
                                 status=ProcessingStatus.PARSING_ERROR))
 
 
-def load_charged_words(file_path: Path,
-                       morph: MorphAnalyzer) -> list[str]:
-    with open(file_path, 'r') as stream:
-        data = stream.read()
-    charged_words = split_by_words(morph, data)
-    return charged_words
-
-
 async def main():
     logging.basicConfig(
         level=logging.INFO
     )
+
+    args = parse_arguments()
+
     morph = MorphAnalyzer()
-    charged_words = load_charged_words(Path('negative_words.txt'), morph)
+    charged_words = load_charged_words(args.charged_words_path, morph)
 
     articles = []
 
@@ -136,7 +130,9 @@ async def main():
                     morph,
                     article_url,
                     charged_words,
-                    articles
+                    articles,
+                    args.fetch_timeout,
+                    args.analysis_timeout
                 )
 
     for article in articles:

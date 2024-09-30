@@ -3,6 +3,7 @@ aiohttp==3.*
 anyio==4.6.0
 async-timeout==4.0.3
 cchardet==2.*
+ConfigArgParse==1.7
 aiodns==2.*
 beautifulsoup4==4.*
 requests==2.*
