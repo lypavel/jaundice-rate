@@ -5,6 +5,16 @@ from configargparse import ArgParser, Namespace
 
 def parse_arguments() -> Namespace:
     parser = ArgParser(default_config_files=('.env', ))
+    parser.add('--server_host',
+               '--SERVER_HOST',
+               type=str,
+               default='0.0.0.0',
+               help='Server host')
+    parser.add('--server_port',
+               '--SERVER_PORT',
+               type=int,
+               default=8080,
+               help='Server port')
     parser.add('--fetch_timeout',
                '--FETCH_TIMEOUT',
                type=int,

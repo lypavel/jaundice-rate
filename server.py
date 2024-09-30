@@ -64,7 +64,7 @@ def main():
     app = web.Application()
     app.add_routes([web.get('/', handle_article)])
 
-    web.run_app(app, port=8000)
+    web.run_app(app, host=args.server_host, port=args.server_port)
 
 
 if __name__ == '__main__':
