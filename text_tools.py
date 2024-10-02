@@ -11,7 +11,7 @@ def _clean_word(word):
     return word
 
 
-def split_by_words(morph, text):
+async def split_by_words(morph, text):
     """Учитывает знаки пунктуации, регистр и словоформы,
     выкидывает предлоги."""
     words = []
@@ -38,8 +38,8 @@ def calculate_jaundice_rate(article_words, charged_words):
     return round(score, 2)
 
 
-def load_charged_words(file_path: Path,
-                       morph: MorphAnalyzer) -> list[str]:
+async def load_charged_words(file_path: Path,
+                             morph: MorphAnalyzer) -> list[str]:
     with open(file_path, 'r') as stream:
-        charged_words = split_by_words(morph, stream.read())
+        charged_words = await split_by_words(morph, stream.read())
     return charged_words

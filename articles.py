@@ -85,7 +85,7 @@ async def process_article(session: ClientSession,
         async with timeout(analysis_timeout):
             async with timer() as get_elapsed_time:
                 cleaned_data = sanitize(html, plaintext=True)
-                article_words = split_by_words(morph, cleaned_data)
+                article_words = await split_by_words(morph, cleaned_data)
                 article_score = calculate_jaundice_rate(article_words,
                                                         charged_words)
 
@@ -117,7 +117,7 @@ async def main():
     args = parse_arguments()
 
     morph = MorphAnalyzer()
-    charged_words = load_charged_words(args.charged_words_path, morph)
+    charged_words = await load_charged_words(args.charged_words_path, morph)
 
     articles = []
 

@@ -1,13 +1,19 @@
+import asyncio
 from functools import partial
+import logging
+from pathlib import Path
 
 from aiohttp import ClientSession, web
 from aiohttp.web_request import Request
+import anyio
 from anyio import create_task_group
 from pymorphy2 import MorphAnalyzer
 
 from articles import process_article
 from parse_args import parse_arguments
 from text_tools import load_charged_words
+
+logger = logging.getLogger(Path(__file__).name)
 
 
 async def handle(request: Request,
@@ -50,21 +56,40 @@ async def handle(request: Request,
     return web.json_response(response)
 
 
-def main():
+async def start_server(host: str, port: int, handler: partial):
+    app = web.Application()
+    app.add_routes([web.get('/', handler)])
+
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, host=host, port=port)
+    await site.start()
+
+    logger.info(f'Started web server at http://{host}:{port}')
+
+    await anyio.sleep_forever()
+
+
+async def main():
+    logging.basicConfig(
+        level=logging.INFO
+    )
+
     args = parse_arguments()
 
     morph = MorphAnalyzer()
-    charged_words = load_charged_words(args.charged_words_path, morph)
+    charged_words = await load_charged_words(args.charged_words_path, morph)
     handle_article = partial(handle, morph=morph,
                              charged_words=charged_words,
                              fetch_timeout=args.fetch_timeout,
                              analysis_timeout=args.analysis_timeout)
 
-    app = web.Application()
-    app.add_routes([web.get('/', handle_article)])
-
-    web.run_app(app, host=args.server_host, port=args.server_port)
+    async with create_task_group() as tg:
+        tg.start_soon(start_server,
+                      args.server_host,
+                      args.server_port,
+                      handle_article)
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())

@@ -15,19 +15,20 @@ CORRECT_URL = 'https://inosmi.ru/20240629/assanzh-269370889.html'
 
 ARGS = parse_arguments()
 MORPH = MorphAnalyzer()
-CHARGED_WORDS = load_charged_words(ARGS.charged_words_path, MORPH)
 FETCH_TIMEOUT = ARGS.fetch_timeout
 ANALYSIS_TIMEOUT = ARGS.analysis_timeout
 
 
 @pytest.mark.asyncio
 async def test_success_case():
+    charged_words = await load_charged_words(ARGS.charged_words_path, MORPH)
     articles = []
+
     async with ClientSession() as session:
         await process_article(session,
                               MORPH,
                               CORRECT_URL,
-                              CHARGED_WORDS,
+                              charged_words,
                               articles,
                               FETCH_TIMEOUT,
                               ANALYSIS_TIMEOUT)
@@ -41,13 +42,14 @@ async def test_success_case():
 
 @pytest.mark.asyncio
 async def test_fetch_error():
+    charged_words = await load_charged_words(ARGS.charged_words_path, MORPH)
     articles = []
 
     async with ClientSession() as session:
         await process_article(session,
                               MORPH,
                               FETCH_ERROR_URL,
-                              CHARGED_WORDS,
+                              charged_words,
                               articles,
                               FETCH_TIMEOUT,
                               ANALYSIS_TIMEOUT)
@@ -61,12 +63,14 @@ async def test_fetch_error():
 
 @pytest.mark.asyncio
 async def test_parsing_error():
+    charged_words = await load_charged_words(ARGS.charged_words_path, MORPH)
     articles = []
+
     async with ClientSession() as session:
         await process_article(session,
                               MORPH,
                               PARSING_ERROR_URL,
-                              CHARGED_WORDS,
+                              charged_words,
                               articles,
                               FETCH_TIMEOUT,
                               ANALYSIS_TIMEOUT)
@@ -80,12 +84,14 @@ async def test_parsing_error():
 
 @pytest.mark.asyncio
 async def test_fetch_timeout():
+    charged_words = await load_charged_words(ARGS.charged_words_path, MORPH)
     articles = []
+
     async with ClientSession() as session:
         await process_article(session,
                               MORPH,
                               CORRECT_URL,
-                              CHARGED_WORDS,
+                              charged_words,
                               articles,
                               0,
                               ANALYSIS_TIMEOUT)
@@ -99,13 +105,15 @@ async def test_fetch_timeout():
 
 @pytest.mark.asyncio
 async def test_analysis_timeout():
+    charged_words = await load_charged_words(ARGS.charged_words_path, MORPH)
     articles = []
+
     with patch('articles.sanitize', side_effect=asyncio.TimeoutError):
         async with ClientSession() as session:
             await process_article(session,
                                   MORPH,
                                   CORRECT_URL,
-                                  CHARGED_WORDS,
+                                  charged_words,
                                   articles,
                                   FETCH_TIMEOUT,
                                   0)
