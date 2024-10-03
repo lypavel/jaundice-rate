@@ -1,3 +1,5 @@
+
+import asyncio
 from pathlib import Path
 import string
 
@@ -17,6 +19,7 @@ async def split_by_words(morph, text):
     words = []
     for word in text.split():
         cleaned_word = _clean_word(word)
+        await asyncio.sleep(0)
         normalized_word = morph.parse(cleaned_word)[0].normal_form
         if len(normalized_word) > 2 or normalized_word == 'не':
             words.append(normalized_word)
